@@ -8,6 +8,8 @@ import { highlight, languages } from 'prismjs/components/prism-core';
 import 'prismjs/components/prism-pascal';
 import 'prismjs/themes/prism.css';
 
+import {tokenize} from './pascalFormater/pascalFormater';
+
 function SaveButton() {
   return (
     <div style={{'backgroundColor': 'lightgreen', 'width': '200px'}}
@@ -34,6 +36,9 @@ class MyEditor extends React.Component {
         onValueChange={code => this.setState({ code })}
         highlight={code => {
           let h = highlight(code, languages.pascal, 'pascal');
+          let tokens = tokenize(code);
+          console.log(tokens);
+
           return h;
         }}
         padding={10}
@@ -45,7 +50,6 @@ class MyEditor extends React.Component {
     );
   }
 }
-
 
 function App() {
   return (
