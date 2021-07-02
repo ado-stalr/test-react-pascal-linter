@@ -1,4 +1,7 @@
-import {languages} from './formaterRules.js';
+import {languages, keywords} from './formaterRules.js';
+
+const onlyUpperTokenTypes = ['keyword', 'typeword', 'operacion'];
+const spacelessPunctuations = ['(', ')', '[', ']'];
 
 function tokenize(text) {
 	var grammar = languages.pascal;
@@ -9,9 +12,138 @@ function tokenize(text) {
 	matchGrammar(text, tokenList, grammar, tokenList.head, 0);
 	tokenizeIdentifiers(tokenList);
 
-	console.log(toArray(tokenList));
+	return tokenList;
+}
 
-	return toArray(tokenList);
+
+function formatting(list) {
+	var node = list.head.next;
+	var mainCtx = {name: 'main'};
+	var stack = [mainCtx];
+	var eoln = '\n';
+	var space = ' ';
+	var tab = '  ';
+	var currentTabAmount = 0;
+
+	while (node !== list.tail) {
+		var stackHead = stack[stack.length-1];
+
+		if(stackHead !== mainCtx) {
+			if (stackHead.ending && stackHead.ending.some(el => el === node.value.content)) {
+				stack.pop();
+				console.log(stack.length);
+			}
+		}
+		if (keywords[node.value.content] && keywords[node.value.content].isOpening) {
+			stack.push(keywords[node.value.content]);
+			console.log(stack.length);
+		};
+
+		var currContent = node.value.content;
+		var prevContent = node.prev.value? node.prev.value.content : null;
+		//add ';' before ends'
+		if (currContent === 'end' && prevContent !== ';' && prevContent !== eoln) {
+			node = addTokenAfter(list, node.prev, 'punctuation', ';');
+			continue;
+		}
+
+		// add eoln after ';'
+		if (node.value.content === ';' && node.next.value && node.next.value.type !== 'comment') {
+			addTokenAfter(list, node, 'spaces', eoln);
+		}
+
+		// add eoln after comment and ' ' before
+		if (node.value.type === 'comment') {
+			addTokenAfter(list, node, 'spaces', eoln);
+			if (node.prev.value && node.prev.value.type !== 'spaces') {
+				addTokenAfter(list, node.prev, 'spaces', space);
+			}
+		}
+		//add spaces before and after operators
+		if (node.value.type === 'operator') {
+			addTokenAfter(list, node, 'spaces', space);
+			addTokenAfter(list, node.prev, 'spaces', space);
+		}
+
+		if (node.value.type === 'punctuation' && !spacelessPunctuations.includes(node.value.content)) {
+			addTokenAfter(list, node, 'spaces', space);
+		}
+
+		if (node.value.type === 'keyword') {
+			if (node.prev.value && (node.prev.value.type !== 'spaces' && node.prev.value.type !== 'punctuation')) {
+				addTokenAfter(list, node.prev, 'spaces', space);
+			}
+			if (node.next.value && (node.next.value.type !== 'spaces' && node.next.value.type !== 'punctuation')) {
+				addTokenAfter(list, node, 'spaces', space);
+			}
+		}
+
+		// if (node.value.content === eoln && node.next.value) {
+		// 	// addTokenAfter(list, node, 'spaces', 'tab');
+		// 	// console.log(node, list.length, node.value.type === 'spaces' && node.value.content === eoln);
+		// 	node = node.next.next;
+		// 	continue;
+		// }
+		node = node.next;
+	};
+
+// remove ; before ends
+	var node = list.head.next;
+
+	while (node.next !== list.tail) {
+		if (node.value.content === ';') {
+
+			if (nextNonSpacesToken(list, node).value.content === 'end') {
+				node.prev.next = node.next.next;
+				node.next.next.prev = node.prev;
+
+				node = node.prev.prev;
+				continue;
+			}
+		}
+
+		node = node.next;
+	}
+
+	console.log(stack);
+	toUpperTokens(list);
+	return toArray(list);
+}
+
+function addTokenAfter(list, node, valueType, value) {
+	var newNode = new Token(valueType, value, undefined, value);
+
+	return addAfter(list, node, newNode);
+}
+
+function prevNonSpacesToken(list, node) {
+	var newNode = node.prev;
+
+	while (newNode !== list.head && newNode.value.type !== 'spaces') {
+		node = node.prev;
+	}
+
+	return newNode;
+}
+
+function nextNonSpacesToken(list, node) {
+	var newNode = node.next;
+
+	while (newNode !== list.tail && newNode.value.type === 'spaces') {
+		newNode = newNode.next;
+	}
+
+	return newNode;
+}
+
+function toUpperTokens(list) {
+	var node = list.head.next;
+	while (node !== list.tail) {
+		if (onlyUpperTokenTypes.includes(node.value.type)) {
+			node.value.content = node.value.content.toUpperCase();
+		};
+		node = node.next;
+	}
 }
 
 function LinkedList() {
@@ -31,8 +163,8 @@ function LinkedList() {
 function addAfter(list, node, value) {
 	// assumes that node != list.tail && values.length >= 0
 	var next = node.next;
-
 	var newNode = { value: value, prev: node, next: next };
+
 	node.next = newNode;
 	next.prev = newNode;
 	list.length++;
@@ -51,7 +183,6 @@ function tokenizeIdentifiers(list) {
 			}else{
 				node.value = new Token('identifier', node.value, undefined, node.value);
 			};
-
 		};
 		node = node.next;
 	}
@@ -78,6 +209,7 @@ function toString(list) {
 		}
 		node = node.next;
 	}
+
 	return str;
 }
 
@@ -100,6 +232,7 @@ function matchPattern(pattern, pos, text, lookbehind) {
 		match.index += lookbehindLength;
 		match[0] = match[0].slice(lookbehindLength);
 	}
+
 	return match;
 }
 
@@ -257,4 +390,4 @@ function matchGrammar(text, tokenList, grammar, startNode, startPos, rematch) {
 	}
 }
 
-export {tokenize};
+export {tokenize, formatting};

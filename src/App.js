@@ -8,7 +8,7 @@ import { highlight, languages } from 'prismjs/components/prism-core';
 import 'prismjs/components/prism-pascal';
 import 'prismjs/themes/prism.css';
 
-import {tokenize} from './pascalFormater/pascalFormater';
+import {tokenize, formatting} from './pascalFormater/pascalFormater';
 
 function SaveButton() {
   return (
@@ -21,9 +21,40 @@ function SaveButton() {
 }
 
 
-const code = `function add(a, b) {
-  return a + b;
-}
+const code = `program insertsort(input, output);
+const
+  max = 16;
+  listend = 0;
+type
+  recarray = array [1..max] of
+                record
+                  key: char;
+                  next: 0..max
+                end;
+  range = 0..max; 
+var
+  arr: recarray;
+  first: range;
+  index: integer;
+  found: boolean;
+begin {insertsort}
+  first := 0;
+  index := 0;
+  writeln('input data:');
+  while (not eoln) and (index <= max)
+  do 
+    begin 
+      index := index + 1;
+      if index <= max
+      then
+        readitemsinlist(arr, first, index)
+    end;
+  if index <= max
+  then
+    printlist(arr, first)
+  else
+    writeln('the maximum length of the list is ', max, ' items.')
+end. {insertsort}
 `;
 
 class MyEditor extends React.Component {
@@ -36,8 +67,9 @@ class MyEditor extends React.Component {
         onValueChange={code => this.setState({ code })}
         highlight={code => {
           let h = highlight(code, languages.pascal, 'pascal');
-          let tokens = tokenize(code);
+          let tokens = formatting(tokenize(code));
           console.log(tokens);
+          console.log(tokens.reduce((str, token) => str + token.content, ''));
 
           return h;
         }}
