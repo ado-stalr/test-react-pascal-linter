@@ -21,40 +21,42 @@ function SaveButton() {
 }
 
 
-const code = `program insertsort(input, output);
-const
-  max = 16;
-  listend = 0;
-type
-  recarray = array [1..max] of
-                record
-                  key: char;
-                  next: 0..max
-                end;
-  range = 0..max; 
-var
-  arr: recarray;
-  first: range;
-  index: integer;
-  found: boolean;
-begin {insertsort}
-  first := 0;
-  index := 0;
-  writeln('input data:');
-  while (not eoln) and (index <= max)
-  do 
-    begin 
-      index := index + 1;
-      if index <= max
-      then
-        readitemsinlist(arr, first, index)
-    end;
-  if index <= max
-  then
-    printlist(arr, first)
-  else
-    writeln('the maximum length of the list is ', max, ' items.')
-end. {insertsort}
+const code = `unit theword;
+interface  type    windowtype = array [1..3] of char;  procedure readword(var fin: text; var newword: string; var wordisfound: boolean);implementation  const    upperalphabet = ['a'..'z', 'à'..'ß', '¨'];    specialsymbols = ['''', '-'];    allalphabet = ['a'..'z', 'a'..'z', 'à'..'ß', 'à'..'ÿ', '¨', '¸'];
+    registerdifference = 32;    empty = ' ';
+  var    window: windowtype;
+  procedure cleanwindow(var window: windowtype);  var
+    i: integer;  begin
+    for i := 1 to length(window)    do
+      window[i] := empty;  end;
+  function tolowercase(str: string): string;
+  var    i, charcode: integer;
+  begin {tolowercase}    for i := 1 to length(str)    do      if (str[i] = '¨') or (str[i] = '¸')      then
+        str[i] := 'å'      else        if (str[i] in upperalphabet)        then
+          begin            charcode := ord(str[i]);            str[i] := chr(charcode + registerdifference)
+          end;    tolowercase := str;
+  end; {tolowercase}
+  procedure addsymbol(var newword: string; var window: windowtype);  var
+    isneedsymbol: boolean;  begin {addsymbol}
+    {íóæíûé ñèìâîë - ýòî áóêâà èëè ñïåö. ñèìâîë, íàõîäÿøèéñÿ ìåæäó áóêâàìè}    isneedsymbol := not (window[2] in specialsymbols) or ((window[2] in specialsymbols) and (window[1] in allalphabet) and (window[3] in allalphabet));
+    if isneedsymbol    then
+      if newword = empty      then
+        newword := window[2]      else
+        newword := newword + window[2];  end; {addsymbol}
+  procedure readword(var fin: text; var newword: string; var wordisfound: boolean);
+  begin    wordisfound := false;    newword := empty;
+    while (not eoln(fin)) and (not wordisfound)
+    do      begin        window[1] := window[2];
+        window[2] := window[3];        read(fin, window[3]);        if (window[2] in allalphabet) or (window[2] in specialsymbols)
+       then          addsymbol(newword, window)
+        else          if newword <> empty
+          then            wordisfound := true
+      end;    if eoln(fin)    then
+      begin        window[1] := window[3];        window[2] := window[3];        addsymbol(newword, window);
+        if newword <> empty        then  
+          wordisfound := true;        cleanwindow(window)
+      end;    newword := tolowercase(newword)
+  end;begin  cleanwindow(window)end.
 `;
 
 class MyEditor extends React.Component {
@@ -69,7 +71,9 @@ class MyEditor extends React.Component {
           let h = highlight(code, languages.pascal, 'pascal');
           let tokens = formatting(tokenize(code));
           console.log(tokens);
-          console.log(tokens.reduce((str, token) => str + token.content, ''));
+          let outputCode = tokens.reduce((str, token) => str + token.content, '');
+          outputCode = outputCode.split('\n').map(el => el.replace(/\-+$/, '')).filter(el => el !== '').join('\n');
+          console.log(outputCode);
 
           return h;
         }}

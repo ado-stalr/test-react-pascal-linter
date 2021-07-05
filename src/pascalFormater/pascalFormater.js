@@ -1,7 +1,7 @@
 import {languages, keywords} from './formaterRules.js';
 
 const onlyUpperTokenTypes = ['keyword', 'typeword', 'operacion'];
-const spacelessPunctuations = ['(', ')', '[', ']'];
+const spacelessPunctuations = ['(', ')', '[', ']', '.'];
 
 function tokenize(text) {
 	var grammar = languages.pascal;
@@ -22,45 +22,79 @@ function formatting(list) {
 	var stack = [mainCtx];
 	var eoln = '\n';
 	var space = ' ';
-	var tab = '  ';
+	var tab = '--';
 	var currentTabAmount = 0;
 
+	// add ';' before ends'
 	while (node !== list.tail) {
-		var stackHead = stack[stack.length-1];
-
-		if(stackHead !== mainCtx) {
-			if (stackHead.ending && stackHead.ending.some(el => el === node.value.content)) {
-				stack.pop();
-				console.log(stack.length);
-			}
-		}
-		if (keywords[node.value.content] && keywords[node.value.content].isOpening) {
-			stack.push(keywords[node.value.content]);
-			console.log(stack.length);
-		};
-
 		var currContent = node.value.content;
 		var prevContent = node.prev.value? node.prev.value.content : null;
-		//add ';' before ends'
 		if (currContent === 'end' && prevContent !== ';' && prevContent !== eoln) {
 			node = addTokenAfter(list, node.prev, 'punctuation', ';');
 			continue;
 		}
 
+		node = node.next;
+	}
+
+	var node = list.head.next;
+
+	while (node !== list.tail) {
+		var stackHead = stack[stack.length-1];
+
+		// searching closing blocks
+		if(stackHead !== mainCtx) {
+			if (stackHead.ending && stackHead.ending.some(el => el === node.value.content)) {
+				if (stackHead.addTab)
+				{
+					currentTabAmount--;
+					if (node.prev.value.type === 'tab') {
+						node.prev.value.content = tab.repeat(currentTabAmount);
+					};
+					// createNewLine(list, node);
+				}
+				if (stackHead.isOpening && !stackHead.ignorEolnUntilEnd)
+				{
+					createNewLine(list, node.prev);
+				}
+				stack.pop();
+				console.log(stack.length, 'closing', stackHead.name, currentTabAmount);
+				// continue;
+			}
+		}
+
+		// searching opening blocks
+		// console.log(node.value);
+		var keyword = getKeywordByContext(node, stackHead)
+		if (keyword && keyword.isOpening) {
+			stack.push(keyword);
+			if (keyword.addTab)
+			{
+				currentTabAmount++;
+				if (!stackHead.ignorEolnUntilEnd) {
+					createNewLine(list, node);
+				}
+			};
+			console.log(stack.length, 'opening', node.value.content, currentTabAmount);
+		};
+
 		// add eoln after ';'
-		if (node.value.content === ';' && node.next.value && node.next.value.type !== 'comment') {
-			addTokenAfter(list, node, 'spaces', eoln);
+		if (node.value.content === ';' && node.next.value && node.next.value.type !== 'comment' && !stackHead.ignorEolnUntilEnd) {
+			createNewLine(list, node);
+			// debugger;
+			node = node.next;
+			continue;
 		}
 
 		// add eoln after comment and ' ' before
 		if (node.value.type === 'comment') {
-			addTokenAfter(list, node, 'spaces', eoln);
-			if (node.prev.value && node.prev.value.type !== 'spaces') {
+			createNewLine(list, node);
+			if (node.prev.value && node.prev.value.type !== 'spaces' && node.prev.value.type !== 'tab') {
 				addTokenAfter(list, node.prev, 'spaces', space);
 			}
 		}
 		//add spaces before and after operators
-		if (node.value.type === 'operator') {
+		if (node.value.type === 'operator' || node.value.type === 'operacion') {
 			addTokenAfter(list, node, 'spaces', space);
 			addTokenAfter(list, node.prev, 'spaces', space);
 		}
@@ -70,7 +104,7 @@ function formatting(list) {
 		}
 
 		if (node.value.type === 'keyword') {
-			if (node.prev.value && (node.prev.value.type !== 'spaces' && node.prev.value.type !== 'punctuation')) {
+			if (node.prev.value && (node.prev.value.type !== 'tab' && node.prev.value.type !== 'punctuation')) {
 				addTokenAfter(list, node.prev, 'spaces', space);
 			}
 			if (node.next.value && (node.next.value.type !== 'spaces' && node.next.value.type !== 'punctuation')) {
@@ -78,12 +112,12 @@ function formatting(list) {
 			}
 		}
 
-		// if (node.value.content === eoln && node.next.value) {
-		// 	// addTokenAfter(list, node, 'spaces', 'tab');
-		// 	// console.log(node, list.length, node.value.type === 'spaces' && node.value.content === eoln);
-		// 	node = node.next.next;
-		// 	continue;
-		// }
+		if (node.value.content === eoln && node.next.value) {
+			// addTokenAfter(list, node, 'spaces', 'tab');
+			// console.log(node, list.length, node.value.type === 'spaces' && node.value.content === eoln);
+			node = node.next.next;
+			continue;
+		}
 		node = node.next;
 	};
 
@@ -92,7 +126,6 @@ function formatting(list) {
 
 	while (node.next !== list.tail) {
 		if (node.value.content === ';') {
-
 			if (nextNonSpacesToken(list, node).value.content === 'end') {
 				node.prev.next = node.next.next;
 				node.next.next.prev = node.prev;
@@ -104,6 +137,30 @@ function formatting(list) {
 
 		node = node.next;
 	}
+
+	function createNewLine(list, node) {
+		if (node.next.value && (node.next.value.type === 'comment' || node.next.value.type === 'punctuation')) {
+			node = node.next;
+		};
+		addTokenAfter(list, node, 'tab', tab.repeat(currentTabAmount));
+		addTokenAfter(list, node, 'spaces', eoln);
+	};
+
+	function getKeywordByContext(node, context) {
+		var keyword = null;
+		if (node.value && keywords[node.value.content]) {
+			keyword = keywords[node.value.content].default
+			console.log(keyword);
+			if (keywords[node.value.content][context.name]) {
+				keyword = keywords[node.value.content][context.name];
+				console.log(keyword);
+			}
+		}
+		return keyword;
+	}
+
+
+
 
 	console.log(stack);
 	toUpperTokens(list);
@@ -119,20 +176,18 @@ function addTokenAfter(list, node, valueType, value) {
 function prevNonSpacesToken(list, node) {
 	var newNode = node.prev;
 
-	while (newNode !== list.head && newNode.value.type !== 'spaces') {
+	while (newNode !== list.head && (newNode.value.type === 'spaces' || newNode.value.type === 'tab')) {
 		node = node.prev;
 	}
-
 	return newNode;
 }
 
 function nextNonSpacesToken(list, node) {
 	var newNode = node.next;
 
-	while (newNode !== list.tail && newNode.value.type === 'spaces') {
+	while (newNode !== list.tail && (newNode.value.type === 'spaces' || newNode.value.type === 'tab')) {
 		newNode = newNode.next;
 	}
-
 	return newNode;
 }
 

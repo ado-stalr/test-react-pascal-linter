@@ -7,13 +7,13 @@ languages.pascal = {
 		/\/\/.*/
 	],
 	'string': {
-		pattern: /(?:'(?:''|[^'\r\n])*'(?!')|#[&$%]?[a-f\d]+)+|\^[a-z]/i,
+		pattern: /(?:'(?:''|[^'\r\n])*'(?!')|#[&$%]?[a-f\d]+)+/i,
 		greedy: true
 	},
 	'keyword': [
 		{
 			// Turbo Pascal
-			pattern: /(^|[^&])\b(?:absolute|array|asm|begin|case|const|constructor|destructor|do|downto|else|end|file|for|function|goto|if|implementation|inherited|inline|interface|label|nil|null|object|of|operator|packed|procedure|program|record|reintroduce|repeat|self|set|then|to|type|unit|until|uses|var|while|with)\b/i,
+			pattern: /(^|[^&])\b(?:absolute|array|asm|begin|case|const|constructor|destructor|do|downto|else|end|file|for|function|goto|if|implementation|inherited|inline|input|interface|label|nil|null|object|of|operator|output|packed|procedure|program|record|reintroduce|repeat|self|set|then|to|type|unit|until|uses|var|while|with)\b/i,
 			lookbehind: true
 		},
 		{
@@ -47,7 +47,7 @@ languages.pascal = {
 		lookbehind: true
 	},
 	'operator': {
-		pattern: /\.\.|\*\*|:=|<[<=>]?|>[>=]?|[+\-*\/]=?|[@^=]/i
+		pattern: /\.\.|\*\*|:=|<[<=>]?|>[>=]?|[+\-*\/]=?|[@=]/i
 	},
 	'punctuation': {
 		pattern: /\(\.|\.\)|[()\[\]:;,.]/
@@ -65,82 +65,189 @@ var keywords = {
 	const: {},
 	begin: {},
 	end: {},
+	var: {},
 };
 
 keywords.unit = {
-	name: 'unit',
-	ending: {
-		including: true,
-		string: ';',
-
-	},
-	addTab: false,
-	addEoln: false,
-	ignorUntilEnd: true,
+	default: {
+		name: 'unit',
+		ending: [';'],
+		addTab: false,
+		ignorEolnUntilEnd: false,
+		isOpening: true,
+	}
 };
+
 keywords.implementation = {
-	name: 'implementation',
-	ending: null,
-	addTab: true,
-	ignorUntilEnd: false,
-	isOpening: true,
+	default: {
+		name: 'implementation',
+		ending: ['begin'],
+		addTab: true,
+		ignorEolnUntilEnd: false,
+		isOpening: true,
+	}
 };
 keywords.interface = {
-	name: 'interface',
-	ending: [keywords.implementation],
-	addTab: true,
-	ignorUntilEnd: false,
-	isOpening: true,
+	default: {
+		name: 'interface',
+		ending: ['implementation'],
+		addTab: true,
+		ignorEolnUntilEnd: false,
+		isOpening: true,
+	}
 };
 keywords.program = {
-	name: 'program',
-	ending: [keywords.end],
-	addTab: false,
-	ignorUntilEnd: true,
-	isOpening: true,
+	default: {
+		name: 'program',
+		ending: ['.'],
+		addTab: false,
+		ignorEolnUntilEnd: false,
+		isOpening: true,
+	}
 };
 keywords.procedure = {
-	name: 'procedure',
-	ending: [{name: ')'}, {name: ';'}],
-	addTab: false,
-	ignorUntilEnd: true,
-	isOpening: true,
+	default: {
+		name: 'procedure',
+		ending: [';'],
+		addTab: false,
+		ignorEolnUntilEnd: false,
+		isOpening: true,
+	},
+	interface: {
+		name: 'procedure',
+		ending: [';'],
+		addTab: false,
+		ignorEolnUntilEnd: true,
+		isOpening: true,
+	}
 };
 keywords.function = {
-	name: 'function',
-	ending: [{name: ')'}, {name: ';'}],
-	addTab: false,
-	ignorUntilEnd: true,
-	isOpening: true,
+	default: {
+		name: 'function',
+		ending: [';'],
+		addTab: false,
+		ignorEolnUntilEnd: false,
+		isOpening: true,
+	},
+	interface: {
+		name: 'function',
+		ending: [';'],
+		addTab: false,
+		ignorEolnUntilEnd: true,
+		isOpening: true,
+	}
 };
 keywords.type = {
-	name: 'type',
-	ending: ['begin', 'const'],
-	addTab: false,
-	ignorUntilEnd: true,
-	isOpening: true,
+	default: {
+		name: 'type',
+		ending: ['begin', 'const', 'var', 'procedure', 'function'],
+		addTab: true,
+		ignorEolnUntilEnd: false,
+		isOpening: true,
+	}
 };
 keywords.const = {
-	name: 'const',
-	ending: ['begin', 'type'],
-	addTab: false,
-	ignorUntilEnd: true,
-	isOpening: true,
+	default: {
+		name: 'const',
+		ending: ['begin', 'type', 'var'],
+		addTab: true,
+		ignorEolnUntilEnd: false,
+		isOpening: true,
+	}
+};
+keywords.var = {
+	default: {
+		name: 'var',
+		ending: ['begin', 'type', 'const', 'procedure', 'function'],
+		addTab: true,
+		ignorEolnUntilEnd: false,
+		isOpening: true,
+	},
+	procedure: {
+		name: 'var',
+		ending: [';', ')'],
+		addTab: false,
+		ignorEolnUntilEnd: true,
+		isOpening: true,
+	},
+	function: {
+		name: 'var',
+		ending: [';', ')'],
+		addTab: false,
+		ignorEolnUntilEnd: true,
+		isOpening: true,
+	}
 };
 keywords.end = {
-	name: 'end',
-	ending: null,
-	addTab: false,
-	ignorUntilEnd: true,
+	default: {
+		name: 'end',
+		ending: null,
+		addTab: false,
+		ignorEolnUntilEnd: true,
+	}
 };
 keywords.begin = {
-	name: 'begin',
-	ending: ['end'],
-	addTab: true,
-	ignorUntilEnd: true,
-	isOpening: true,
+	default: {
+		name: 'begin',
+		ending: ['end'],
+		addTab: true,
+		ignorEolnUntilEnd: false,
+		isOpening: true,
+	}
 };
-
-
+keywords.if = {
+	default: {
+		name: 'if',
+		ending: ['then'],
+		addTab: false,
+		ignorEolnUntilEnd: false,
+		isOpening: true,
+	}
+};
+keywords.then = {
+	default: {
+		name: 'then',
+		ending: ['else' , ';', 'end'],
+		addTab: true,
+		ignorEolnUntilEnd: false,
+		isOpening: true,
+	}
+};
+keywords.else = {
+	default: {
+		name: 'else',
+		ending: [';', 'end'],
+		addTab: true,
+		ignorEolnUntilEnd: false,
+		isOpening: true,
+	}
+};
+keywords.while = {
+	default: {
+		name: 'while',
+		ending: ['do'],
+		addTab: false,
+		ignorEolnUntilEnd: false,
+		isOpening: true,
+	}
+};
+keywords.for = {
+	default: {
+		name: 'for',
+		ending: ['do'],
+		addTab: false,
+		ignorEolnUntilEnd: false,
+		isOpening: true,
+	}
+};
+keywords.do = {
+	default: {
+		name: 'do',
+		ending: [';', 'end'],
+		addTab: true,
+		ignorEolnUntilEnd: false,
+		isOpening: true,
+	}
+};
 
 export {languages, keywords};
