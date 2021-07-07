@@ -13,7 +13,7 @@ languages.pascal = {
 	'keyword': [
 		{
 			// Turbo Pascal
-			pattern: /(^|[^&])\b(?:absolute|array|asm|begin|case|const|constructor|destructor|do|downto|else|end|file|for|function|goto|if|implementation|inherited|inline|input|interface|label|nil|null|object|of|operator|output|packed|procedure|program|record|reintroduce|repeat|self|set|then|to|type|unit|until|uses|var|while|with)\b/i,
+			pattern: /(^|[^&])\b(?:absolute|array|asm|begin|case|const|constructor|destructor|do|downto|else|end|file|for|function|goto|if|implementation|inherited|inline|input|interface|label|length|nil|null|object|of|operator|output|packed|procedure|program|record|reintroduce|repeat|self|set|then|to|type|unit|until|uses|var|while|with)\b/i,
 			lookbehind: true
 		},
 		{
@@ -55,199 +55,188 @@ languages.pascal = {
 };
 
 var keywords = {
-	unit: {},
-	implementation: {},
-	interface: {},
-	program: {},
-	procedure: {},
-	function: {},
-	type: {},
-	const: {},
-	begin: {},
-	end: {},
-	var: {},
-};
-
-keywords.unit = {
-	default: {
-		name: 'unit',
-		ending: [';'],
-		addTab: false,
-		ignorEolnUntilEnd: false,
-		isOpening: true,
-	}
-};
-
-keywords.implementation = {
-	default: {
-		name: 'implementation',
-		ending: ['begin'],
-		addTab: true,
-		ignorEolnUntilEnd: false,
-		isOpening: true,
-	}
-};
-keywords.interface = {
-	default: {
-		name: 'interface',
-		ending: ['implementation'],
-		addTab: true,
-		ignorEolnUntilEnd: false,
-		isOpening: true,
-	}
-};
-keywords.program = {
-	default: {
-		name: 'program',
-		ending: ['.'],
-		addTab: false,
-		ignorEolnUntilEnd: false,
-		isOpening: true,
-	}
-};
-keywords.procedure = {
-	default: {
-		name: 'procedure',
-		ending: [';'],
-		addTab: false,
-		ignorEolnUntilEnd: false,
-		isOpening: true,
+	unit: {
+		default: {
+			name: 'unit',
+			ending: [';'],
+			addTab: false,
+			ignorEolnUntilEnd: false,
+			isOpening: true,
+		}
+	},
+	implementation: {
+		default: {
+			name: 'implementation',
+			ending: ['begin'],
+			addTab: true,
+			ignorEolnUntilEnd: false,
+			isOpening: true,
+		}
 	},
 	interface: {
-		name: 'procedure',
-		ending: [';'],
-		addTab: false,
-		ignorEolnUntilEnd: true,
-		isOpening: true,
-	}
-};
-keywords.function = {
-	default: {
-		name: 'function',
-		ending: [';'],
-		addTab: false,
-		ignorEolnUntilEnd: false,
-		isOpening: true,
+		default: {
+			name: 'interface',
+			ending: ['implementation'],
+			addTab: true,
+			ignorEolnUntilEnd: false,
+			isOpening: true,
+		}
 	},
-	interface: {
-		name: 'function',
-		ending: [';'],
-		addTab: false,
-		ignorEolnUntilEnd: true,
-		isOpening: true,
-	}
-};
-keywords.type = {
-	default: {
-		name: 'type',
-		ending: ['begin', 'const', 'var', 'procedure', 'function'],
-		addTab: true,
-		ignorEolnUntilEnd: false,
-		isOpening: true,
-	}
-};
-keywords.const = {
-	default: {
-		name: 'const',
-		ending: ['begin', 'type', 'var'],
-		addTab: true,
-		ignorEolnUntilEnd: false,
-		isOpening: true,
-	}
-};
-keywords.var = {
-	default: {
-		name: 'var',
-		ending: ['begin', 'type', 'const', 'procedure', 'function'],
-		addTab: true,
-		ignorEolnUntilEnd: false,
-		isOpening: true,
+	program: {
+		default: {
+			name: 'program',
+			ending: ['.'],
+			addTab: false,
+			ignorEolnUntilEnd: false,
+			isOpening: true,
+		}
 	},
 	procedure: {
-		name: 'var',
-		ending: [';', ')'],
-		addTab: false,
-		ignorEolnUntilEnd: true,
-		isOpening: true,
+		default: {
+			name: 'procedure',
+			ending: ['end'],
+			addTab: false,
+			ignorEolnUntilEnd: false,
+			isOpening: true,
+		},
+		interface: {
+			name: 'procedure',
+			ending: [';'],
+			addTab: false,
+			ignorEolnUntilEnd: true,
+			isOpening: true,
+		}
 	},
 	function: {
-		name: 'var',
-		ending: [';', ')'],
-		addTab: false,
-		ignorEolnUntilEnd: true,
-		isOpening: true,
-	}
-};
-keywords.end = {
-	default: {
-		name: 'end',
-		ending: null,
-		addTab: false,
-		ignorEolnUntilEnd: true,
-	}
-};
-keywords.begin = {
-	default: {
-		name: 'begin',
-		ending: ['end'],
-		addTab: true,
-		ignorEolnUntilEnd: false,
-		isOpening: true,
-	}
-};
-keywords.if = {
-	default: {
-		name: 'if',
-		ending: ['then'],
-		addTab: false,
-		ignorEolnUntilEnd: false,
-		isOpening: true,
-	}
-};
-keywords.then = {
-	default: {
-		name: 'then',
-		ending: ['else' , ';', 'end'],
-		addTab: true,
-		ignorEolnUntilEnd: false,
-		isOpening: true,
-	}
-};
-keywords.else = {
-	default: {
-		name: 'else',
-		ending: [';', 'end'],
-		addTab: true,
-		ignorEolnUntilEnd: false,
-		isOpening: true,
-	}
-};
-keywords.while = {
-	default: {
-		name: 'while',
-		ending: ['do'],
-		addTab: false,
-		ignorEolnUntilEnd: false,
-		isOpening: true,
-	}
-};
-keywords.for = {
-	default: {
-		name: 'for',
-		ending: ['do'],
-		addTab: false,
-		ignorEolnUntilEnd: false,
-		isOpening: true,
-	}
-};
-keywords.do = {
-	default: {
-		name: 'do',
-		ending: [';', 'end'],
-		addTab: true,
-		ignorEolnUntilEnd: false,
-		isOpening: true,
-	}
+		default: {
+			name: 'function',
+			ending: ['end'],
+			addTab: false,
+			ignorEolnUntilEnd: false,
+			isOpening: true,
+		},
+		interface: {
+			name: 'function',
+			ending: [';'],
+			addTab: false,
+			ignorEolnUntilEnd: true,
+			isOpening: true,
+		}
+	},
+	type: {
+		default: {
+			name: 'type',
+			ending: ['begin', 'const', 'var', 'procedure', 'function'],
+			addTab: true,
+			ignorEolnUntilEnd: false,
+			isOpening: true,
+		}
+	},
+	const: {
+		default: {
+			name: 'const',
+			ending: ['begin', 'type', 'var'],
+			addTab: true,
+			ignorEolnUntilEnd: false,
+			isOpening: true,
+		}
+	},
+	var: {
+		default: {
+			name: 'var',
+			ending: ['begin', 'type', 'const', 'procedure', 'function'],
+			addTab: true,
+			ignorEolnUntilEnd: false,
+			isOpening: true,
+		},
+		'brackets': {
+			name: 'var',
+			ending: null,
+			addTab: false,
+			ignorEolnUntilEnd: true,
+			isOpening: false,
+		}
+	},
+	end: {
+		default: {
+			name: 'end',
+			ending: null,
+			addTab: false,
+			ignorEolnUntilEnd: true,
+		}
+	},
+	begin: {
+		default: {
+			name: 'begin',
+			ending: ['end'],
+			addTab: true,
+			ignorEolnUntilEnd: false,
+			isOpening: true,
+		}
+	},
+	if: {
+		default: {
+			name: 'if',
+			ending: [';'],
+			addTab: false,
+			ignorEolnUntilEnd: false,
+			isOpening: true,
+		}
+	},
+	then: {
+		default: {
+			name: 'then',
+			ending: ['else' , ';'],
+			addTab: true,
+			ignorEolnUntilEnd: false,
+			isOpening: true,
+		}
+	},
+	else: {
+		default: {
+			name: 'else',
+			ending: [';'],
+			addTab: true,
+			ignorEolnUntilEnd: false,
+			isOpening: true,
+		}
+	},
+	while: {
+		default: {
+			name: 'while',
+			ending: [';'],
+			addTab: false,
+			ignorEolnUntilEnd: false,
+			isOpening: true,
+		}
+	},
+	for: {
+		default: {
+			name: 'for',
+			ending: [';'],
+			addTab: false,
+			ignorEolnUntilEnd: false,
+			isOpening: true,
+		}
+	},
+	do: {
+		default: {
+			name: 'do',
+			ending: [';'],
+			addTab: true,
+			ignorEolnUntilEnd: false,
+			isOpening: true,
+		}
+	},
+	'(': {
+		default: {
+			name: 'brackets',
+			ending: [')'],
+			addTab: false,
+			ignorEolnUntilEnd: true,
+			isOpening: true,
+		}
+	},
 };
 
 export {languages, keywords};

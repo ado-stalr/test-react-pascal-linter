@@ -21,7 +21,7 @@ function SaveButton() {
 }
 
 
-const code = `unit theword;
+var code = `unit theword; {addasf}
 interface  type    windowtype = array [1..3] of char;  procedure readword(var fin: text; var newword: string; var wordisfound: boolean);implementation  const    upperalphabet = ['a'..'z', 'à'..'ß', '¨'];    specialsymbols = ['''', '-'];    allalphabet = ['a'..'z', 'a'..'z', 'à'..'ß', 'à'..'ÿ', '¨', '¸'];
     registerdifference = 32;    empty = ' ';
   var    window: windowtype;
@@ -58,6 +58,7 @@ interface  type    windowtype = array [1..3] of char;  procedure readword(var fi
       end;    newword := tolowercase(newword)
   end;begin  cleanwindow(window)end.
 `;
+code = code.replace(/\{.*\}/g, '');
 
 class MyEditor extends React.Component {
   state = { code };
@@ -73,6 +74,7 @@ class MyEditor extends React.Component {
           console.log(tokens);
           let outputCode = tokens.reduce((str, token) => str + token.content, '');
           outputCode = outputCode.split('\n').map(el => el.replace(/\-+$/, '')).filter(el => el !== '').join('\n');
+          document.getElementById('code').innerHTML = outputCode;
           console.log(outputCode);
 
           return h;

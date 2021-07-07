@@ -18,14 +18,21 @@ function tokenize(text) {
 
 function formatting(list) {
 	var node = list.head.next;
-	var mainCtx = {name: 'main'};
+	var mainCtx = {
+		name: 'main',
+		ending: null,
+		addTab: false,
+		ignorEolnUntilEnd: false,
+		isOpening: true
+	};
 	var stack = [mainCtx];
 	var eoln = '\n';
 	var space = ' ';
 	var tab = '--';
 	var currentTabAmount = 0;
+	var ignorEoln = false;
 
-	// add ';' before ends'
+	// add ';' before ends
 	while (node !== list.tail) {
 		var currContent = node.value.content;
 		var prevContent = node.prev.value? node.prev.value.content : null;
@@ -41,6 +48,7 @@ function formatting(list) {
 
 	while (node !== list.tail) {
 		var stackHead = stack[stack.length-1];
+		console.log(node.value.content);
 
 		// searching closing blocks
 		if(stackHead !== mainCtx) {
@@ -58,8 +66,11 @@ function formatting(list) {
 					createNewLine(list, node.prev);
 				}
 				stack.pop();
-				console.log(stack.length, 'closing', stackHead.name, currentTabAmount);
-				// continue;
+
+				console.log(stack.length, 'closing', stackHead.name, currentTabAmount, node.value.content);
+				stackHead = stack[stack.length-1];
+				ignorEoln = stackHead.ignorEolnUntilEnd;
+				continue;
 			}
 		}
 
@@ -75,7 +86,8 @@ function formatting(list) {
 					createNewLine(list, node);
 				}
 			};
-			console.log(stack.length, 'opening', node.value.content, currentTabAmount);
+			stackHead = stack[stack.length - 1];
+			console.log(stack.length, 'opening', keyword.name, currentTabAmount, node.value.content);
 		};
 
 		// add eoln after ';'
@@ -126,7 +138,8 @@ function formatting(list) {
 
 	while (node.next !== list.tail) {
 		if (node.value.content === ';') {
-			if (nextNonSpacesToken(list, node).value.content === 'end') {
+			var nextNonSpacesNode = nextNonSpacesToken(list, node);
+			if (nextNonSpacesNode && nextNonSpacesNode.value && nextNonSpacesNode.value.content === 'end') {
 				node.prev.next = node.next.next;
 				node.next.next.prev = node.prev;
 
@@ -202,15 +215,11 @@ function toUpperTokens(list) {
 }
 
 function LinkedList() {
-	/** @type {LinkedListNode<T>} */
 	var head = { value: null, prev: null, next: null };
-	/** @type {LinkedListNode<T>} */
 	var tail = { value: null, prev: head, next: null };
 	head.next = tail;
 
-	/** @type {LinkedListNode<T>} */
 	this.head = head;
-	/** @type {LinkedListNode<T>} */
 	this.tail = tail;
 	this.length = 0;
 }
@@ -236,6 +245,7 @@ function tokenizeIdentifiers(list) {
 				node.prev.next = node.next;
 				node.next.prev = node.prev;
 			}else{
+				node.value = node.value[0].toUpperCase() + node.value.slice(1);
 				node.value = new Token('identifier', node.value, undefined, node.value);
 			};
 		};
@@ -324,7 +334,6 @@ function matchGrammar(text, tokenList, grammar, startNode, startPos, rematch) {
 				patternObj.pattern = RegExp(patternObj.pattern.source, flags + 'g');
 			}
 
-			/** @type {RegExp} */
 			var pattern = patternObj.pattern || patternObj;
 
 			for ( // iterate the token list and keep track of the current token/string position
@@ -428,7 +437,6 @@ function matchGrammar(text, tokenList, grammar, startNode, startPos, rematch) {
 					// at least one Token object was removed, so we have to do some rematching
 					// this can only happen if the current pattern is greedy
 
-					/** @type {RematchOptions} */
 					var nestedRematch = {
 						cause: token + ',' + j,
 						reach: reach
