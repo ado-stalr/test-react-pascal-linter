@@ -4,9 +4,9 @@ const onlyUpperTokenTypes = ['keyword', 'typeword', 'operacion'];
 const spacelessPunctuations = ['(', ')', '[', ']', '.'];
 
 function tokenize(text) {
-	var grammar = languages.pascal;
+	let grammar = languages.pascal;
 
-	var tokenList = new LinkedList();
+	let tokenList = new LinkedList();
 
 	addAfter(tokenList, tokenList.head, text);
 	matchGrammar(text, tokenList, grammar, tokenList.head, 0);
@@ -15,51 +15,53 @@ function tokenize(text) {
 	return tokenList;
 }
 
-
 function formatting(list) {
-	var node = list.head.next;
-	var mainCtx = {
+	const eoln = '\n';
+	const space = ' ';
+	const tab = '--';
+	const mainCtx = {
 		name: 'main',
 		ending: null,
 		addTab: false,
 		ignorEolnUntilEnd: false,
 		isOpening: true
 	};
-	var stack = [mainCtx];
-	var eoln = '\n';
-	var space = ' ';
-	var tab = '--';
-	var currentTabAmount = 0;
-	var ignorEoln = false;
+	let stack = [mainCtx];
+	let currentTabAmount = 0;
+	let ignorEoln = false;
 
 	// add ';' before ends
+	let node = list.head.next;
+
 	while (node !== list.tail) {
-		var currContent = node.value.content;
-		var prevContent = node.prev.value? node.prev.value.content : null;
+		let currContent = node.value.content.toLowerCase();
+		let prevContent = node.prev.value? node.prev.value.content.toLowerCase() : null;
 		if (currContent === 'end' && prevContent !== ';' && prevContent !== eoln) {
 			node = addTokenAfter(list, node.prev, 'punctuation', ';');
 			continue;
 		}
-
 		node = node.next;
 	}
 
-	var node = list.head.next;
+	// basic blocking and formatting
+	node = list.head.next;
 
 	while (node !== list.tail) {
-		var stackHead = stack[stack.length-1];
-		console.log(node.value.content);
+		let stackHead = stack[stack.length - 1];
 
 		// searching closing blocks
-		if(stackHead !== mainCtx) {
-			if (stackHead.ending && stackHead.ending.some(el => el === node.value.content)) {
+		if(stackHead !== mainCtx && stackHead.ending) {
+			let ending = stackHead.ending.find(el => el.key === node.value.content.toLowerCase());
+			console.log(stackHead, node.value.content.toLowerCase(), ending);
+			if (ending) {
+
+				// debugger;
 				if (stackHead.addTab)
 				{
 					currentTabAmount--;
 					if (node.prev.value.type === 'tab') {
 						node.prev.value.content = tab.repeat(currentTabAmount);
-					};
-					// createNewLine(list, node);
+					}
 				}
 				if (stackHead.isOpening && !stackHead.ignorEolnUntilEnd)
 				{
@@ -67,33 +69,47 @@ function formatting(list) {
 				}
 				stack.pop();
 
+				let isGreedyEnd = ending.isGreedy;
+				console.log(isGreedyEnd);
+
 				console.log(stack.length, 'closing', stackHead.name, currentTabAmount, node.value.content);
+
 				stackHead = stack[stack.length-1];
 				ignorEoln = stackHead.ignorEolnUntilEnd;
-				continue;
+				if (!isGreedyEnd){
+					continue;
+				}
 			}
 		}
 
+		//remove extra tabs
+		if (node.value && node.value.type === 'tab' && node.value.content !== tab.repeat(currentTabAmount) ) {
+			node.value.content = tab.repeat(currentTabAmount);
+		}
+
 		// searching opening blocks
-		// console.log(node.value);
-		var keyword = getKeywordByContext(node, stackHead)
-		if (keyword && keyword.isOpening) {
-			stack.push(keyword);
-			if (keyword.addTab)
-			{
-				currentTabAmount++;
-				if (!stackHead.ignorEolnUntilEnd) {
-					createNewLine(list, node);
+		let keyword = getKeywordByContext(node, stackHead);
+		if (keyword) {
+			if (keyword.eolnBefore && !stackHead.ignorEolnUntilEnd) {
+				createNewLine(list, node.prev);
+			}
+			if (keyword.isOpening) {
+				stack.push(keyword);
+
+				if (keyword.addTab) {
+					currentTabAmount++;
+					if (!stackHead.ignorEolnUntilEnd) {
+						createNewLine(list, node);
+					}
 				}
-			};
-			stackHead = stack[stack.length - 1];
-			console.log(stack.length, 'opening', keyword.name, currentTabAmount, node.value.content);
-		};
+				stackHead = stack[stack.length - 1];
+				console.log(stack.length, 'opening', keyword.name, currentTabAmount, node.value.content);
+			}
+		}
 
 		// add eoln after ';'
 		if (node.value.content === ';' && node.next.value && node.next.value.type !== 'comment' && !stackHead.ignorEolnUntilEnd) {
 			createNewLine(list, node);
-			// debugger;
 			node = node.next;
 			continue;
 		}
@@ -105,18 +121,24 @@ function formatting(list) {
 				addTokenAfter(list, node.prev, 'spaces', space);
 			}
 		}
-		//add spaces before and after operators
+		//add spaces before and after operators/operacions
 		if (node.value.type === 'operator' || node.value.type === 'operacion') {
-			addTokenAfter(list, node, 'spaces', space);
-			addTokenAfter(list, node.prev, 'spaces', space);
+			if(node.next.value && node.next.value.type !== 'spaces' && node.next.value.type !== 'tab') {
+				addTokenAfter(list, node, 'spaces', space);
+			}
+			if(node.next.value && node.prev.value.type !== 'spaces' && node.prev.value.type !== 'tab') {
+				addTokenAfter(list, node.prev, 'spaces', space);
+			}
 		}
 
 		if (node.value.type === 'punctuation' && !spacelessPunctuations.includes(node.value.content)) {
-			addTokenAfter(list, node, 'spaces', space);
+			if(node.next.value.type !== 'spaces' && node.next.value.type !== 'tab') {
+				addTokenAfter(list, node, 'spaces', space);
+			}
 		}
 
 		if (node.value.type === 'keyword') {
-			if (node.prev.value && (node.prev.value.type !== 'tab' && node.prev.value.type !== 'punctuation')) {
+			if (node.prev.value && (node.prev.value.type !== 'spaces' && node.prev.value.type !== 'tab' && node.prev.value.type !== 'punctuation')) {
 				addTokenAfter(list, node.prev, 'spaces', space);
 			}
 			if (node.next.value && (node.next.value.type !== 'spaces' && node.next.value.type !== 'punctuation')) {
@@ -124,22 +146,22 @@ function formatting(list) {
 			}
 		}
 
-		if (node.value.content === eoln && node.next.value) {
-			// addTokenAfter(list, node, 'spaces', 'tab');
-			// console.log(node, list.length, node.value.type === 'spaces' && node.value.content === eoln);
-			node = node.next.next;
-			continue;
-		}
+		// if (node.value.content === eoln && node.next.value) {
+		// 	// addTokenAfter(list, node, 'spaces', 'tab');
+		// 	// console.log(node, list.length, node.value.type === 'spaces' && node.value.content === eoln);
+		// 	node = node.next.next;
+		// 	continue;
+		// }
 		node = node.next;
-	};
+	}
 
-// remove ; before ends
-	var node = list.head.next;
+	// remove ; before ends
+	node = list.head.next;
 
 	while (node.next !== list.tail) {
 		if (node.value.content === ';') {
 			var nextNonSpacesNode = nextNonSpacesToken(list, node);
-			if (nextNonSpacesNode && nextNonSpacesNode.value && nextNonSpacesNode.value.content === 'end') {
+			if (nextNonSpacesNode && nextNonSpacesNode.value && nextNonSpacesNode.value.content.toLowerCase() === 'end') {
 				node.prev.next = node.next.next;
 				node.next.next.prev = node.prev;
 
@@ -154,18 +176,19 @@ function formatting(list) {
 	function createNewLine(list, node) {
 		if (node.next.value && (node.next.value.type === 'comment' || node.next.value.type === 'punctuation')) {
 			node = node.next;
-		};
+		}
 		addTokenAfter(list, node, 'tab', tab.repeat(currentTabAmount));
 		addTokenAfter(list, node, 'spaces', eoln);
-	};
+	}
 
 	function getKeywordByContext(node, context) {
-		var keyword = null;
-		if (node.value && keywords[node.value.content]) {
-			keyword = keywords[node.value.content].default
+		let keyword = null;
+		if (node.value && keywords[node.value.content.toLowerCase()]) {
+			let keywordName = node.value.content.toLowerCase();
+			keyword = keywords[keywordName].default
 			console.log(keyword);
-			if (keywords[node.value.content][context.name]) {
-				keyword = keywords[node.value.content][context.name];
+			if (keywords[keywordName][context.name]) {
+				keyword = keywords[keywordName][context.name];
 				console.log(keyword);
 			}
 		}
@@ -209,7 +232,7 @@ function toUpperTokens(list) {
 	while (node !== list.tail) {
 		if (onlyUpperTokenTypes.includes(node.value.type)) {
 			node.value.content = node.value.content.toUpperCase();
-		};
+		}
 		node = node.next;
 	}
 }

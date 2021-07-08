@@ -58,96 +58,180 @@ var keywords = {
 	unit: {
 		default: {
 			name: 'unit',
-			ending: [';'],
+			ending: [{
+				key: ';',
+				isGreedy: false,
+			}],
 			addTab: false,
 			ignorEolnUntilEnd: false,
 			isOpening: true,
+			eolnBefore: true,
 		}
 	},
 	implementation: {
 		default: {
 			name: 'implementation',
-			ending: ['begin'],
+			ending: [{
+				key: 'begin',
+				isGreedy: false,
+			}],
 			addTab: true,
 			ignorEolnUntilEnd: false,
 			isOpening: true,
+			eolnBefore: true,
 		}
 	},
 	interface: {
 		default: {
 			name: 'interface',
-			ending: ['implementation'],
+			ending: [{
+				key: 'implementation',
+				isGreedy: false,
+			}],
 			addTab: true,
 			ignorEolnUntilEnd: false,
 			isOpening: true,
+			eolnBefore: true,
 		}
 	},
 	program: {
 		default: {
 			name: 'program',
-			ending: ['.'],
+			ending: [{
+				key: '.',
+				isGreedy: true,
+			}],
 			addTab: false,
 			ignorEolnUntilEnd: false,
 			isOpening: true,
+			eolnBefore: true,
 		}
 	},
 	procedure: {
 		default: {
 			name: 'procedure',
-			ending: ['end'],
+			ending: [{
+				key: ';',
+				isGreedy: false,
+			}],
 			addTab: false,
 			ignorEolnUntilEnd: false,
 			isOpening: true,
+			eolnBefore: true,
 		},
 		interface: {
 			name: 'procedure',
-			ending: [';'],
+			ending: [{
+				key: ';',
+				isGreedy: false,
+			}],
 			addTab: false,
 			ignorEolnUntilEnd: true,
 			isOpening: true,
+			eolnBefore: true,
 		}
 	},
 	function: {
 		default: {
 			name: 'function',
-			ending: ['end'],
+			ending: [{
+				key: ';',
+				isGreedy: false,
+			}],
 			addTab: false,
 			ignorEolnUntilEnd: false,
 			isOpening: true,
+			eolnBefore: true,
 		},
 		interface: {
 			name: 'function',
-			ending: [';'],
+			ending: [{
+				key: ';',
+				isGreedy: false,
+			}],
 			addTab: false,
 			ignorEolnUntilEnd: true,
 			isOpening: true,
+			eolnBefore: true,
 		}
 	},
 	type: {
 		default: {
 			name: 'type',
-			ending: ['begin', 'const', 'var', 'procedure', 'function'],
+			ending: [{
+				key: 'begin',
+				isGreedy: false,
+			},
+			{
+				key: 'const',
+				isGreedy: false,
+			},
+			{
+				key: 'var',
+				isGreedy: false,
+			},
+			{
+				key: 'procedure',
+				isGreedy: false,
+			},
+			{
+				key: 'function',
+				isGreedy: false,
+			}],
 			addTab: true,
 			ignorEolnUntilEnd: false,
 			isOpening: true,
+			eolnBefore: true,
 		}
 	},
 	const: {
 		default: {
 			name: 'const',
-			ending: ['begin', 'type', 'var'],
+			ending: [{
+				key: 'begin',
+				isGreedy: false,
+			},
+			{
+				key: 'type',
+				isGreedy: false,
+			},
+			{
+				key: 'var',
+				isGreedy: false,
+			}],
 			addTab: true,
 			ignorEolnUntilEnd: false,
 			isOpening: true,
+			eolnBefore: true,
 		}
 	},
 	var: {
 		default: {
 			name: 'var',
-			ending: ['begin', 'type', 'const', 'procedure', 'function'],
+			ending: [{
+				key: 'begin',
+				isGreedy: false,
+			},
+			{
+				key: 'const',
+				isGreedy: false,
+			},
+			{
+				key: 'type',
+				isGreedy: false,
+			},
+			{
+				key: 'procedure',
+				isGreedy: false,
+			},
+			{
+				key: 'function',
+				isGreedy: false,
+			}],
 			addTab: true,
 			ignorEolnUntilEnd: false,
 			isOpening: true,
+			eolnBefore: true,
 		},
 		'brackets': {
 			name: 'var',
@@ -155,6 +239,7 @@ var keywords = {
 			addTab: false,
 			ignorEolnUntilEnd: true,
 			isOpening: false,
+			eolnBefore: false,
 		}
 	},
 	end: {
@@ -163,78 +248,194 @@ var keywords = {
 			ending: null,
 			addTab: false,
 			ignorEolnUntilEnd: true,
+			eolnBefore: false,
 		}
 	},
 	begin: {
 		default: {
 			name: 'begin',
-			ending: ['end'],
+			ending: [{
+				key: 'end',
+				isGreedy: true,
+			}],
 			addTab: true,
 			ignorEolnUntilEnd: false,
 			isOpening: true,
+			eolnBefore: true,
 		}
 	},
 	if: {
 		default: {
 			name: 'if',
-			ending: [';'],
+			ending: [
+				{
+					key: 'else',
+					isGreedy: true,
+				},
+				{
+					key: ';',
+					isGreedy: false,
+				}],
 			addTab: false,
 			ignorEolnUntilEnd: false,
 			isOpening: true,
-		}
+			eolnBefore: true,
+		},
 	},
 	then: {
 		default: {
 			name: 'then',
-			ending: ['else' , ';'],
+			ending: [
+				{
+					key: 'else',
+					isGreedy: false,
+				},
+				{
+					key: ';',
+					isGreedy: false,
+				}],
 			addTab: true,
 			ignorEolnUntilEnd: false,
 			isOpening: true,
+			eolnBefore: true,
 		}
 	},
 	else: {
 		default: {
 			name: 'else',
-			ending: [';'],
+			ending: [
+				{
+					key: 'else',
+					isGreedy: false,
+				},
+				{
+					key: ';',
+					isGreedy: false,
+				}],
 			addTab: true,
 			ignorEolnUntilEnd: false,
 			isOpening: true,
-		}
+			eolnBefore: true,
+		},
 	},
 	while: {
 		default: {
 			name: 'while',
-			ending: [';'],
+			ending: [{
+				key: ';',
+				isGreedy: false,
+			}],
 			addTab: false,
 			ignorEolnUntilEnd: false,
 			isOpening: true,
+			eolnBefore: true
 		}
 	},
 	for: {
 		default: {
 			name: 'for',
-			ending: [';'],
+			ending: [{
+				key: ';',
+				isGreedy: false,
+			}],
 			addTab: false,
 			ignorEolnUntilEnd: false,
 			isOpening: true,
+			eolnBefore: true
 		}
 	},
 	do: {
 		default: {
 			name: 'do',
-			ending: [';'],
+			ending: [{
+				key: ';',
+				isGreedy: false,
+			}],
 			addTab: true,
 			ignorEolnUntilEnd: false,
 			isOpening: true,
+			eolnBefore: true
+		}
+	},
+	case: {
+		default: {
+			name: 'case',
+			ending: [{
+				key: 'end',
+				isGreedy: true,
+			},
+			{
+				key: 'else',
+				isGreedy: true,
+			}],
+			addTab: false,
+			ignorEolnUntilEnd: false,
+			isOpening: true,
+			eolnBefore: true
+		}
+	},
+	of: {
+		default: {
+			name: 'of',
+			ending: null,
+			addTab: false,
+			ignorEolnUntilEnd: false,
+			isOpening: false,
+			eolnBefore: false
+		},
+		case: {
+			name: 'of',
+			ending: [{
+					key: 'end',
+					isGreedy: false,
+				},
+				{
+					key: 'else',
+					isGreedy: false,
+				}],
+			addTab: true,
+			ignorEolnUntilEnd: false,
+			isOpening: true,
+			eolnBefore: false
+		}
+	},
+	repeat: {
+		default: {
+			name: 'repeat',
+			ending: [{
+				key: 'until',
+				isGreedy: false,
+			}],
+			addTab: true,
+			ignorEolnUntilEnd: false,
+			isOpening: true,
+			eolnBefore: true
+		}
+	},
+	until: {
+		default: {
+			name: 'until',
+			ending: [{
+				key: ';',
+				isGreedy: false,
+			}],
+			addTab: false,
+			ignorEolnUntilEnd: true,
+			isOpening: true,
+			eolnBefore: true
 		}
 	},
 	'(': {
 		default: {
 			name: 'brackets',
-			ending: [')'],
+			ending: [{
+				key: ')',
+				isGreedy: true,
+			}],
 			addTab: false,
 			ignorEolnUntilEnd: true,
 			isOpening: true,
+			eolnBefore: false,
 		}
 	},
 };
