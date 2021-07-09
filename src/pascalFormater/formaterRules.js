@@ -63,9 +63,28 @@ var keywords = {
 				isGreedy: false,
 			}],
 			addTab: false,
+			isFloatingTabSize: false,
 			ignorEolnUntilEnd: false,
 			isOpening: true,
 			eolnBefore: true,
+			spaceAfter: false,
+			spaceBefore: false,
+		}
+	},
+	uses: {
+		default: {
+			name: 'uses',
+			ending: [{
+				key: ';',
+				isGreedy: false,
+			}],
+			addTab: true,
+			isFloatingTabSize: false,
+			ignorEolnUntilEnd: false,
+			isOpening: true,
+			eolnBefore: true,
+			spaceAfter: false,
+			spaceBefore: false,
 		}
 	},
 	implementation: {
@@ -76,9 +95,12 @@ var keywords = {
 				isGreedy: false,
 			}],
 			addTab: true,
+			isFloatingTabSize: false,
 			ignorEolnUntilEnd: false,
 			isOpening: true,
 			eolnBefore: true,
+			spaceAfter: false,
+			spaceBefore: false,
 		}
 	},
 	interface: {
@@ -89,9 +111,12 @@ var keywords = {
 				isGreedy: false,
 			}],
 			addTab: true,
+			isFloatingTabSize: false,
 			ignorEolnUntilEnd: false,
 			isOpening: true,
 			eolnBefore: true,
+			spaceAfter: false,
+			spaceBefore: false,
 		}
 	},
 	program: {
@@ -102,22 +127,28 @@ var keywords = {
 				isGreedy: true,
 			}],
 			addTab: false,
+			isFloatingTabSize: false,
 			ignorEolnUntilEnd: false,
 			isOpening: true,
-			eolnBefore: true,
+			eolnBefore: false,
+			spaceAfter: true,
+			spaceBefore: false,
 		}
 	},
 	procedure: {
 		default: {
 			name: 'procedure',
 			ending: [{
-				key: ';',
+				key: 'end',
 				isGreedy: false,
 			}],
 			addTab: false,
+			isFloatingTabSize: false,
 			ignorEolnUntilEnd: false,
 			isOpening: true,
 			eolnBefore: true,
+			spaceAfter: true,
+			spaceBefore: false,
 		},
 		interface: {
 			name: 'procedure',
@@ -126,22 +157,28 @@ var keywords = {
 				isGreedy: false,
 			}],
 			addTab: false,
+			isFloatingTabSize: false,
 			ignorEolnUntilEnd: true,
 			isOpening: true,
 			eolnBefore: true,
+			spaceAfter: true,
+			spaceBefore: false,
 		}
 	},
 	function: {
 		default: {
 			name: 'function',
 			ending: [{
-				key: ';',
-				isGreedy: false,
+				key: 'end',
+				isGreedy: true,
 			}],
 			addTab: false,
+			isFloatingTabSize: false,
 			ignorEolnUntilEnd: false,
 			isOpening: true,
 			eolnBefore: true,
+			spaceAfter: true,
+			spaceBefore: false,
 		},
 		interface: {
 			name: 'function',
@@ -150,9 +187,12 @@ var keywords = {
 				isGreedy: false,
 			}],
 			addTab: false,
+			isFloatingTabSize: false,
 			ignorEolnUntilEnd: true,
 			isOpening: true,
 			eolnBefore: true,
+			spaceAfter: true,
+			spaceBefore: false,
 		}
 	},
 	type: {
@@ -179,9 +219,12 @@ var keywords = {
 				isGreedy: false,
 			}],
 			addTab: true,
+			isFloatingTabSize: false,
 			ignorEolnUntilEnd: false,
 			isOpening: true,
 			eolnBefore: true,
+			spaceAfter: false,
+			spaceBefore: false,
 		}
 	},
 	const: {
@@ -198,11 +241,22 @@ var keywords = {
 			{
 				key: 'var',
 				isGreedy: false,
+			},
+			{
+				key: 'procedure',
+				isGreedy: false,
+			},
+			{
+				key: 'function',
+				isGreedy: false,
 			}],
 			addTab: true,
+			isFloatingTabSize: false,
 			ignorEolnUntilEnd: false,
 			isOpening: true,
 			eolnBefore: true,
+			spaceAfter: false,
+			spaceBefore: false,
 		}
 	},
 	var: {
@@ -229,17 +283,23 @@ var keywords = {
 				isGreedy: false,
 			}],
 			addTab: true,
+			isFloatingTabSize: false,
 			ignorEolnUntilEnd: false,
 			isOpening: true,
 			eolnBefore: true,
+			spaceAfter: false,
+			spaceBefore: false,
 		},
 		'brackets': {
 			name: 'var',
 			ending: null,
 			addTab: false,
+			isFloatingTabSize: false,
 			ignorEolnUntilEnd: true,
 			isOpening: false,
 			eolnBefore: false,
+			spaceAfter: true,
+			spaceBefore: false,
 		}
 	},
 	end: {
@@ -247,8 +307,12 @@ var keywords = {
 			name: 'end',
 			ending: null,
 			addTab: false,
+			isFloatingTabSize: false,
 			ignorEolnUntilEnd: true,
+			isOpening: false,
 			eolnBefore: false,
+			spaceAfter: false,
+			spaceBefore: false,
 		}
 	},
 	begin: {
@@ -259,9 +323,54 @@ var keywords = {
 				isGreedy: true,
 			}],
 			addTab: true,
+			isFloatingTabSize: false,
 			ignorEolnUntilEnd: false,
 			isOpening: true,
 			eolnBefore: true,
+			spaceAfter: false,
+			spaceBefore: false,
+		},
+		procedure: {
+			name: 'begin',
+			ending: [{
+				key: 'end',
+				isGreedy: false,
+			}],
+			addTab: true,
+			isFloatingTabSize: false,
+			ignorEolnUntilEnd: false,
+			isOpening: true,
+			eolnBefore: true,
+			spaceAfter: false,
+			spaceBefore: false,
+		},
+		function: {
+			name: 'begin',
+			ending: [{
+				key: 'end',
+				isGreedy: false,
+			}],
+			addTab: true,
+			isFloatingTabSize: false,
+			ignorEolnUntilEnd: false,
+			isOpening: true,
+			eolnBefore: true,
+			spaceAfter: false,
+			spaceBefore: false,
+		},
+		of: {
+			name: 'begin',
+			ending: [{
+				key: 'end',
+				isGreedy: true,
+			}],
+			addTab: true,
+			isFloatingTabSize: true,
+			ignorEolnUntilEnd: false,
+			isOpening: true,
+			eolnBefore: false,
+			spaceAfter: false,
+			spaceBefore: false,
 		}
 	},
 	if: {
@@ -277,9 +386,12 @@ var keywords = {
 					isGreedy: false,
 				}],
 			addTab: false,
+			isFloatingTabSize: false,
 			ignorEolnUntilEnd: false,
 			isOpening: true,
 			eolnBefore: true,
+			spaceAfter: true,
+			spaceBefore: false,
 		},
 	},
 	then: {
@@ -295,9 +407,12 @@ var keywords = {
 					isGreedy: false,
 				}],
 			addTab: true,
+			isFloatingTabSize: false,
 			ignorEolnUntilEnd: false,
 			isOpening: true,
 			eolnBefore: true,
+			spaceAfter: false,
+			spaceBefore: false,
 		}
 	},
 	else: {
@@ -313,9 +428,27 @@ var keywords = {
 					isGreedy: false,
 				}],
 			addTab: true,
+			isFloatingTabSize: false,
 			ignorEolnUntilEnd: false,
 			isOpening: true,
 			eolnBefore: true,
+			spaceAfter: false,
+			spaceBefore: false,
+		},
+		case: {
+			name: 'else',
+			ending: [
+				{
+					key: 'end',
+					isGreedy: false,
+				}],
+			addTab: true,
+			isFloatingTabSize: false,
+			ignorEolnUntilEnd: false,
+			isOpening: true,
+			eolnBefore: true,
+			spaceAfter: false,
+			spaceBefore: false,
 		},
 	},
 	while: {
@@ -326,9 +459,12 @@ var keywords = {
 				isGreedy: false,
 			}],
 			addTab: false,
+			isFloatingTabSize: false,
 			ignorEolnUntilEnd: false,
 			isOpening: true,
-			eolnBefore: true
+			eolnBefore: true,
+			spaceAfter: true,
+			spaceBefore: false,
 		}
 	},
 	for: {
@@ -339,9 +475,12 @@ var keywords = {
 				isGreedy: false,
 			}],
 			addTab: false,
+			isFloatingTabSize: false,
 			ignorEolnUntilEnd: false,
 			isOpening: true,
-			eolnBefore: true
+			eolnBefore: true,
+			spaceAfter: true,
+			spaceBefore: false,
 		}
 	},
 	do: {
@@ -352,9 +491,12 @@ var keywords = {
 				isGreedy: false,
 			}],
 			addTab: true,
+			isFloatingTabSize: false,
 			ignorEolnUntilEnd: false,
 			isOpening: true,
-			eolnBefore: true
+			eolnBefore: true,
+			spaceAfter: true,
+			spaceBefore: false,
 		}
 	},
 	case: {
@@ -363,15 +505,14 @@ var keywords = {
 			ending: [{
 				key: 'end',
 				isGreedy: true,
-			},
-			{
-				key: 'else',
-				isGreedy: true,
 			}],
 			addTab: false,
+			isFloatingTabSize: false,
 			ignorEolnUntilEnd: false,
 			isOpening: true,
-			eolnBefore: true
+			eolnBefore: true,
+			spaceAfter: true,
+			spaceBefore: false,
 		}
 	},
 	of: {
@@ -379,24 +520,30 @@ var keywords = {
 			name: 'of',
 			ending: null,
 			addTab: false,
+			isFloatingTabSize: false,
 			ignorEolnUntilEnd: false,
 			isOpening: false,
-			eolnBefore: false
+			eolnBefore: false,
+			spaceAfter: true,
+			spaceBefore: true,
 		},
 		case: {
 			name: 'of',
 			ending: [{
-					key: 'end',
-					isGreedy: false,
-				},
-				{
-					key: 'else',
-					isGreedy: false,
-				}],
+				key: 'end',
+				isGreedy: false,
+			},
+			{
+				key: 'else',
+				isGreedy: true,
+			}],
 			addTab: true,
+			isFloatingTabSize: false,
 			ignorEolnUntilEnd: false,
 			isOpening: true,
-			eolnBefore: false
+			eolnBefore: false,
+			spaceAfter: true,
+			spaceBefore: true,
 		}
 	},
 	repeat: {
@@ -407,9 +554,12 @@ var keywords = {
 				isGreedy: false,
 			}],
 			addTab: true,
+			isFloatingTabSize: false,
 			ignorEolnUntilEnd: false,
 			isOpening: true,
-			eolnBefore: true
+			eolnBefore: true,
+			spaceAfter: false,
+			spaceBefore: false,
 		}
 	},
 	until: {
@@ -420,9 +570,41 @@ var keywords = {
 				isGreedy: false,
 			}],
 			addTab: false,
+			isFloatingTabSize: false,
 			ignorEolnUntilEnd: true,
 			isOpening: true,
-			eolnBefore: true
+			eolnBefore: true,
+			spaceAfter: true,
+			spaceBefore: false,
+		}
+	},
+	array: {
+		default: {
+			name: 'array',
+			ending: null,
+			addTab: false,
+			isFloatingTabSize: false,
+			ignorEolnUntilEnd: false,
+			isOpening: false,
+			eolnBefore: false,
+			spaceAfter: true,
+			spaceBefore: true,
+		}
+	},
+	record: {
+		default: {
+			name: 'record',
+			ending: [{
+				key: 'end',
+				isGreedy: true,
+			}],
+			addTab: true,
+			isFloatingTabSize: true,
+			ignorEolnUntilEnd: false,
+			isOpening: true,
+			eolnBefore: false,
+			spaceAfter: false,
+			spaceBefore: false,
 		}
 	},
 	'(': {
@@ -433,9 +615,12 @@ var keywords = {
 				isGreedy: true,
 			}],
 			addTab: false,
+			isFloatingTabSize: false,
 			ignorEolnUntilEnd: true,
 			isOpening: true,
 			eolnBefore: false,
+			spaceAfter: false,
+			spaceBefore: false,
 		}
 	},
 };
