@@ -1,9 +1,9 @@
-var languages = {};
+let languages = {};
 
 languages.pascal = {
 	'comment': [
 		/\(\*[\s\S]+?\*\)/,
-		/\{[\s\S]+?\}/,
+		/\{[\s\S]*?\}/,
 		/\/\/.*/
 	],
 	'string': {
@@ -54,7 +54,7 @@ languages.pascal = {
 	}
 };
 
-var keywords = {
+let keywords = {
 	unit: {
 		default: {
 			name: 'unit',
@@ -140,7 +140,7 @@ var keywords = {
 			name: 'procedure',
 			ending: [{
 				key: 'end',
-				isGreedy: false,
+				isGreedy: true,
 			}],
 			addTab: false,
 			isFloatingTabSize: false,

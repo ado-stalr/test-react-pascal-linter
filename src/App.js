@@ -8,7 +8,7 @@ import { highlight, languages } from 'prismjs/components/prism-core';
 import 'prismjs/components/prism-pascal';
 import 'prismjs/themes/prism.css';
 
-import {tokenize, formatting, checkFormating} from './pascalFormater/pascalFormater';
+import { checkFormating } from './pascalFormater/pascalChecker';
 
 function SaveButton() {
   return (
@@ -26,7 +26,7 @@ var code = `VAR
 BEGIN 
   
   WHILE Looking = 'Y'
-  DO
+    DO
     BEGIN
       
       BEGIN
@@ -44,7 +44,6 @@ BEGIN
   
 END. 
 `;
-code = code.replace(/\{.*\}/g, '');
 
 class MyEditor extends React.Component {
   state = { code };
@@ -57,7 +56,9 @@ class MyEditor extends React.Component {
         highlight={code => {
           let h = highlight(code, languages.pascal, 'pascal');
 
-          document.getElementById('code').innerHTML = checkFormating(code);
+          let pccCheck = checkFormating(code, {line: true, expected: true});
+
+          document.getElementById('code').innerHTML = pccCheck.error? pccCheck.result + '<br />' + pccCheck.error : pccCheck.result;
 
           return h;
         }}

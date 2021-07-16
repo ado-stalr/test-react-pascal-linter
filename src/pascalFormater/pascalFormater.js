@@ -1,4 +1,4 @@
-import {languages, keywords} from './formaterRules.js';
+import {languages, keywords} from './rules.js';
 
 const onlyUpperTokenTypes = ['keyword', 'typeword', 'operacion'];
 const spacelessPunctuations = ['(', ')', '[', ']', '.'];
@@ -9,35 +9,19 @@ const space = ' ';
 const tabSimbol = ' ';
 const tabSize = 2;
 
-function checkFormating(code) {
-	let checkResult = true;
-	let re = new RegExp(`\\${tabSimbol}+\\;*$`, 'g');
-
-	code = code.replace(/\{.*\}/g, ''); //delete all comments
-
-	let tokens = formatting(tokenize(code));
-	let formatingCode = tokens.reduce((str, token) => str + token.content, '');
-	formatingCode = formatingCode.split('\n').map(el => el.replace(re, '')).filter(el => el !== '' && el !== ';').join('\n');
-
-	console.log(code);
-	console.log('*****\n');
-	console.log(formatingCode);
-	return checkResult;
-}
-
-function tokenize(text) {
+function tokenize(code) {
 	let grammar = languages.pascal;
 
 	let tokenList = new LinkedList();
 
-	addAfter(tokenList, tokenList.head, text);
-	matchGrammar(text, tokenList, grammar, tokenList.head, 0);
+	addAfter(tokenList, tokenList.head, code);
+	matchGrammar(code, tokenList, grammar, tokenList.head, 0);
 	tokenizeIdentifiers(tokenList);
 
 	return tokenList;
 }
 
-function formatting(list) {
+function formatting(code) {
 	const mainCtx = {
 		name: 'main',
 		ending: null,
@@ -45,18 +29,20 @@ function formatting(list) {
 		ignorEolnUntilEnd: false,
 		isOpening: true
 	};
+	let list = tokenize(code);
 	let stack = [mainCtx];
 	let tabsStack = [0];
 	let currentTabAmount = tabsStack[0];
 
 
-	// add ';' before ends
+	// add ';' before ends and implementation
 	let node = list.head.next;
 
+	// ПЕРЕДЕЛАТЬ НА prevNonSpacesToken
 	while (node !== list.tail) {
 		let currContent = node.value.content.toLowerCase();
 		let prevContent = node.prev.value? node.prev.value.content.toLowerCase() : null;
-		if (currContent === 'end' && prevContent !== ';' && prevContent !== eoln) {
+		if ((currContent === 'end' || currContent === 'implementation') && prevContent !== ';' && prevContent !== eoln) {
 			node = addTokenAfter(list, node.prev, 'punctuation', ';');
 			continue;
 		}
@@ -68,6 +54,11 @@ function formatting(list) {
 
 	while (node !== list.tail) {
 		let stackHead = stack[stack.length - 1];
+
+
+		if (stackHead === mainCtx && node.value.content.toLowerCase() === 'end') {
+			stack.push(getKeywordByContext(node, stackHead));
+		}
 
 		// searching closing blocks
 		if(stackHead !== mainCtx && stackHead.ending) {
@@ -87,7 +78,7 @@ function formatting(list) {
 				{
 					createNewLine(list, node.prev);
 				}
-				// for remove floating offsets
+				// for disable floating offsets
 				if (stackHead.isFloatingTabSize) {
 					tabsStack.pop();
 					currentTabAmount = tabsStack[tabsStack.length - 1];
@@ -249,7 +240,11 @@ function formatting(list) {
 
 	console.log(stack);
 	toUpperTokens(list);
-	return toArray(list);
+
+	return {
+		code: toString(list),
+		sintaxError: stack.length > 1
+	};
 }
 
 function addTokenAfter(list, node, valueType, value) {
@@ -262,7 +257,6 @@ function prevNonSpacesToken(list, node) {
 	let newNode = node.prev;
 
 	while (newNode !== list.head && (newNode.value.type === 'spaces' || newNode.value.type === 'tab' || newNode.value.type === 'comment')) {
-		// console.log(newNode);
 		newNode = newNode.prev;
 	}
 	return newNode;
@@ -335,6 +329,7 @@ function tokenizeIdentifiers(list) {
 function toArray(list) {
 	let array = [];
 	let node = list.head.next;
+
 	while (node !== list.tail) {
 		array.push(node.value);
 		node = node.next;
@@ -343,18 +338,23 @@ function toArray(list) {
 }
 
 function toString(list) {
-	let str = '';
+	const emptyOperatorsRe = new RegExp(`\\${tabSimbol}+\\;*$`, 'g');
+	let code = '';
+	let codeLines = [];
 	let node = list.head.next;
+
 	while (node !== list.tail) {
 		if (typeof(node.value) === 'string'){
-			str = str + ' ' + node.value.trim().replace(/\s+/g, ' ');
+			code = code + ' ' + node.value.trim().replace(/\s+/g, ' ');
 		} else {
-			str = str + node.value.content;
+			code = code + node.value.content;
 		}
 		node = node.next;
 	}
+	codeLines = code.split('\n').map(el => el.replace(emptyOperatorsRe, '')).filter(el => el !== '' && el !== ';');
+	code = codeLines.join('\n');
 
-	return str;
+	return code;
 }
 
 function removeRange(list, node, count) {
@@ -373,7 +373,7 @@ function matchPattern(pattern, pos, text, lookbehind) {
 	pattern.lastIndex = pos;
 	let match = pattern.exec(text);
 	if (match && lookbehind && match[1]) {
-		// change the match to remove the text matched by the Prism lookbehind group
+		// change the match to remove the text matched lookbehind group
 		let lookbehindLength = match[1].length;
 		match.index += lookbehindLength;
 		match[0] = match[0].slice(lookbehindLength);
@@ -534,4 +534,4 @@ function matchGrammar(text, tokenList, grammar, startNode, startPos, rematch) {
 	}
 }
 
-export {tokenize, formatting, checkFormating};
+export {formatting};
